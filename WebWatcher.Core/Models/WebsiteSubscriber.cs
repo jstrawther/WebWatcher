@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Xml.Serialization;
+
 namespace WebWatcher.Core.Models
 {
     public class WebsiteSubscriber
@@ -9,6 +11,7 @@ namespace WebWatcher.Core.Models
 
         public string EmailAddress { get; set; }
 
+        [XmlIgnore]
         public Website Website { get; set; }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Xml.Serialization;
+
 namespace WebWatcher.Core.Models
 {
     public class WebsiteSnapshot
@@ -22,6 +24,7 @@ namespace WebWatcher.Core.Models
 
         public DateTime DateCreated { get; set; }
 
+        [XmlIgnore]
         public Website Website { get; set; }
     }
 }

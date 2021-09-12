@@ -1,10 +1,14 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 using McMaster.Extensions.CommandLineUtils;
 using WebWatcher.Core;
 using WebWatcher.Core.EmailClient;
+using WebWatcher.Core.Models;
 using WebWatcher.Core.Notifications;
 using WebWatcher.Core.WebClient;
 using WebWatcher.EF;
@@ -17,6 +21,9 @@ namespace WebWatcher.Console
     {
         static async Task<int> Main(string[] args) => await CommandLineApplication.ExecuteAsync<Program>(args);
 
+        [Option("-l|--list-websites", Description = "List all websites currently being watched")]
+        public bool ListWebsites { get; set; }
+
         [Option("-a|--add-url", Description = "Add a website to watch")]
         public string WebsiteToAdd { get; }
 
@@ -28,6 +35,12 @@ namespace WebWatcher.Console
 
         private async Task<int> OnExecuteAsync(CommandLineApplication app, CancellationToken cancellationToken = default)
         {
+            if (ListWebsites)
+            {
+                ListAllWebsites();
+                return 0;
+            }
+
             if (!string.IsNullOrEmpty(WebsiteToAdd))
             {
                 if (string.IsNullOrEmpty(EmailToNotify))
@@ -55,6 +68,29 @@ namespace WebWatcher.Console
             await client.CheckAllWebsitesAsync();
 
             return 0;
+        }
+
+        private void ListAllWebsites()
+        {
+            var emptyNamespaces = new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty });
+            var settings = new XmlWriterSettings();
+            settings.Indent = true;
+            settings.OmitXmlDeclaration = true;
+            var serializer = new XmlSerializer(typeof(Website));
+
+            var websites = CreateClient().GetAllWebsites();
+            foreach(var website in websites)
+            {
+
+                using (var stream = new StringWriter())
+                using (var writer = XmlWriter.Create(stream, settings))
+                {
+                    serializer.Serialize(writer, website, emptyNamespaces);
+                    var websiteXml = stream.ToString();
+                    System.Console.WriteLine(websiteXml);
+                    System.Console.WriteLine();
+                }
+            }
         }
 
         private int PromptForWebsiteId()
