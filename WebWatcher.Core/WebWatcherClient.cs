@@ -51,6 +51,11 @@ namespace WebWatcher.Core
             return _dataAccess.GetAllWebsites();
         }
 
+        public Website GetWebsiteById(int id)
+        {
+            return _dataAccess.GetWebsiteById(id);
+        }
+
         public int AddWebsiteToWatch(string websiteUrlToAdd, string elementSelector, string emailToNotify)
         {
             var website = new Website()
@@ -85,6 +90,11 @@ namespace WebWatcher.Core
             });
 
             return subscriber.Id != 0 ? 0 : 1;
+        }
+
+        public void DeleteWebsite(Website website)
+        {
+            _dataAccess.DeleteWebsite(website);
         }
     }
 }

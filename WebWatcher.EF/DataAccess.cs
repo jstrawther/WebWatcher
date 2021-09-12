@@ -16,6 +16,30 @@ namespace WebWatcher.EF
             this._dbContext = webWatcherDbContext;
         }
 
+        public IEnumerable<Website> GetAllWebsites()
+        {
+            return _dbContext.Websites.Include(x => x.Subscribers).ToList();
+        }
+
+        public Website GetWebsiteById(int websiteId)
+        {
+            return _dbContext.Websites.Find(websiteId);
+        }
+
+        public Website AddWebsite(Website website)
+        {
+            _dbContext.Websites.Add(website);
+            _dbContext.SaveChanges();
+            if (website.Id == 0) throw new InvalidOperationException();
+            return website;
+        }
+
+        public void DeleteWebsite(Website website)
+        {
+            _dbContext.Websites.Remove(website);
+            _dbContext.SaveChanges();
+        }
+
         public WebsiteSnapshot AddSnapshot(WebsiteSnapshot snapshot)
         {
             _dbContext.WebsiteSnapshots.Add(snapshot);
@@ -32,30 +56,12 @@ namespace WebWatcher.EF
             return subscriber;
         }
 
-        public Website AddWebsite(Website website)
-        {
-            _dbContext.Websites.Add(website);
-            _dbContext.SaveChanges();
-            if (website.Id == 0) throw new InvalidOperationException();
-            return website;
-        }
-
-        public IEnumerable<Website> GetAllWebsites()
-        {
-            return _dbContext.Websites.Include(x => x.Subscribers).ToList();
-        }
-
         public WebsiteSnapshot GetLatestSnapshot(Website website)
         {
             return _dbContext.WebsiteSnapshots
                 .Where(x => x.WebsiteId == website.Id)
                 .OrderByDescending(x => x.DateCreated)
                 .FirstOrDefault();
-        }
-
-        public Website GetWebsiteById(int websiteId)
-        {
-            return _dbContext.Websites.Find(websiteId);
         }
     }
 }

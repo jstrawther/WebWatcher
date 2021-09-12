@@ -24,7 +24,7 @@ namespace WebWatcher.Console
         [Option("-l|--list-websites", Description = "List all websites currently being watched")]
         public bool ListWebsites { get; set; }
 
-        [Option("-a|--add-url", Description = "Add a website to watch")]
+        [Option("-a|--add-website", Description = "Add a website to watch")]
         public string WebsiteToAdd { get; }
 
         [Option("-s|--selector", Description = "Element selector")]
@@ -33,11 +33,20 @@ namespace WebWatcher.Console
         [Option("-n|--notify-email", Description = "Email address to notify. Required if --add-url is specified.")]
         public string EmailToNotify { get; }
 
+        [Option("-rm|--remove-website", Description = "Remove a website. Prompts for the ID to remove.")]
+        public bool RemoveWebsite { get; set; }
+
         private async Task<int> OnExecuteAsync(CommandLineApplication app, CancellationToken cancellationToken = default)
         {
             if (ListWebsites)
             {
                 ListAllWebsites();
+                return 0;
+            }
+
+            if (RemoveWebsite)
+            {
+                PromptToRemoveWebsite();
                 return 0;
             }
 
@@ -122,6 +131,22 @@ namespace WebWatcher.Console
         private int AddEmailToNotify(int websiteIdToAdd, string emailToNotify)
         {
             return CreateClient().AddEmailToNotify(websiteIdToAdd, emailToNotify);
+        }
+
+        private void PromptToRemoveWebsite()
+        {
+            var client = CreateClient();
+            var websiteId = PromptForWebsiteId();
+            var website = client.GetWebsiteById(websiteId);
+            if(website != null)
+            {
+                System.Console.Write($"Are you sure you want to remove {website.Url} from the watch list? (y/n)");
+                var input = System.Console.ReadLine();
+                if(input == "y" || input == "Y")
+                {
+                    client.DeleteWebsite(website);
+                }
+            }            
         }
 
         private static WebWatcherClient CreateClient()

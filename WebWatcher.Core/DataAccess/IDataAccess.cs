@@ -12,10 +12,13 @@ namespace WebWatcher.Core.DataAccess
 
         Website AddWebsite(Website website);
 
+        void DeleteWebsite(Website website);
+
         WebsiteSnapshot GetLatestSnapshot(Website website);
 
         WebsiteSnapshot AddSnapshot(WebsiteSnapshot snapshot);
 
         WebsiteSubscriber AddSubscriber(WebsiteSubscriber subscriber);
+
     }
 }
