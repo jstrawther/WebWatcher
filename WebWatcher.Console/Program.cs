@@ -15,7 +15,7 @@ namespace WebWatcher.Console
     [HelpOption("-h")]
     class Program
     {
-        static Task<int> Main(string[] args) => CommandLineApplication.ExecuteAsync<Program>(args);
+        static async Task<int> Main(string[] args) => await CommandLineApplication.ExecuteAsync<Program>(args);
 
         [Option("-a|--add-url", Description = "Add a website to watch")]
         public string WebsiteToAdd { get; }
