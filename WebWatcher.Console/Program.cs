@@ -1,12 +1,15 @@
 ﻿using System;
 using System.IO;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using WebWatcher.Core;
+using WebWatcher.Core.DataAccess;
 using WebWatcher.Core.EmailClient;
 using WebWatcher.Core.Models;
 using WebWatcher.Core.Notifications;
@@ -19,8 +22,42 @@ namespace WebWatcher.Console
     [HelpOption("-h")]
     class Program
     {
-        static async Task<int> Main(string[] args) =>
-            await CommandLineApplication.ExecuteAsync<Program>(args);
+        public static async Task<int> Main(string[] args)
+        {
+            return await new HostBuilder()
+                .ConfigureLogging((context, builder) =>
+                {
+                    //builder.AddConsole();
+                })
+                .ConfigureServices((context, services) =>
+                {
+                    services.AddScoped<IDataAccess, DataAccess>()
+                            .AddDbContext<WebWatcherDbContext>(
+                                options => options.UseSqlite(
+                                    "Data Source=WebWatcher.sqlite", b => b.MigrationsAssembly("WebWatcher.Console")))
+                            .AddScoped<IWebClient, WebClient>()
+                            .AddHttpClient()
+                            .AddScoped<INotifier, Notifier>()
+                            .AddScoped<IEmailClient, EmailClient>(_ =>
+                            {
+                                var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+                                if (string.IsNullOrWhiteSpace(sendGridApiKey))
+                                {
+                                    throw new InvalidOperationException("SENDGRID_API_KEY environment variable not defined");
+                                }
+                                return new EmailClient(sendGridApiKey);
+                            })
+                            .AddScoped<WebWatcherClient>();
+                })
+                .RunCommandLineApplicationAsync<Program>(args);
+        }
+
+        private readonly WebWatcherClient _client;
+
+        public Program(WebWatcherClient webWatcherClient)
+        {
+            _client = webWatcherClient;
+        }
 
         [Option("-l|--list-websites", Description = "List all websites currently being watched")]
         public bool ListWebsites { get; set; }
@@ -73,9 +110,7 @@ namespace WebWatcher.Console
 
         private async Task<int> CheckAllWebsitesAsync()
         {
-            var client = CreateClient();
-
-            await client.CheckAllWebsitesAsync();
+            await _client.CheckAllWebsitesAsync();
 
             return 0;
         }
@@ -88,7 +123,7 @@ namespace WebWatcher.Console
             settings.OmitXmlDeclaration = true;
             var serializer = new XmlSerializer(typeof(Website));
 
-            var websites = CreateClient().GetAllWebsites();
+            var websites = _client.GetAllWebsites();
             foreach(var website in websites)
             {
 
@@ -107,7 +142,7 @@ namespace WebWatcher.Console
         {
             int? websiteId = null;
 
-            var websites = CreateClient().GetAllWebsites();
+            var websites = _client.GetAllWebsites();
             while(websiteId == null)
             {                
                 foreach(var website in websites)
@@ -122,45 +157,26 @@ namespace WebWatcher.Console
 
         private int AddWebsiteToWatch(string websiteUrlToAdd, string elementSelector, string emailToNotify)
         {
-            return CreateClient().AddWebsiteToWatch(websiteUrlToAdd, elementSelector, emailToNotify);
+            return _client.AddWebsiteToWatch(websiteUrlToAdd, elementSelector, emailToNotify);
         }
 
         private int AddEmailToNotify(int websiteIdToAdd, string emailToNotify)
         {
-            return CreateClient().AddEmailToNotify(websiteIdToAdd, emailToNotify);
+            return _client.AddEmailToNotify(websiteIdToAdd, emailToNotify);
         }
 
         private void PromptToRemoveWebsite()
         {
-            var client = CreateClient();
             var websiteId = PromptForWebsiteId();
-            var website = client.GetWebsiteById(websiteId);
+            var website = _client.GetWebsiteById(websiteId);
             if(website != null)
             {
                 var confirmRemove = Prompt.GetYesNo($"Are you sure you want to remove {website.Url} from the watch list?", defaultAnswer: false);
                 if (confirmRemove)
                 {
-                    client.DeleteWebsite(website);
+                    _client.DeleteWebsite(website);
                 }
             }            
-        }
-
-        private static WebWatcherClient CreateClient()
-        {
-            // EF 
-            var dbContext = new WebWatcherDbContextFactory().CreateDbContext(null);
-            var dataAccess = new DataAccess(dbContext);
-
-            // Web client
-            var httpClient = new HttpClient();
-            var webClient = new WebClient(httpClient);
-
-            // Sendgrid
-            var sendgridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
-            var emailClient = new EmailClient(sendgridApiKey);
-            var notifier = new Notifier(emailClient);
-
-            return new WebWatcherClient(dataAccess, webClient, notifier);
         }
     }
 }

@@ -9,9 +9,9 @@ namespace WebWatcher.Core.WebClient
     {
         private readonly HttpClient _httpClient;
 
-        public WebClient(HttpClient httpClient)
+        public WebClient(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient();
         }
 
         public async Task<string> GetContentAsync(Website website)
