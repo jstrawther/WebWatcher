@@ -19,7 +19,8 @@ namespace WebWatcher.Console
     [HelpOption("-h")]
     class Program
     {
-        static async Task<int> Main(string[] args) => await CommandLineApplication.ExecuteAsync<Program>(args);
+        static async Task<int> Main(string[] args) =>
+            await CommandLineApplication.ExecuteAsync<Program>(args);
 
         [Option("-l|--list-websites", Description = "List all websites currently being watched")]
         public bool ListWebsites { get; set; }
@@ -113,12 +114,8 @@ namespace WebWatcher.Console
                 {
                     System.Console.WriteLine($"{website.Id}: {website.Url}");
                 }
-                System.Console.Write("Enter website Id: ");
-                var input = System.Console.ReadLine();
-                if (int.TryParse(input, out int parsedWebsiteId))
-                {
-                    websiteId = parsedWebsiteId;
-                }
+
+                websiteId = Prompt.GetInt("Enter website Id: ");
             }
             return websiteId.Value;
         }
@@ -140,9 +137,8 @@ namespace WebWatcher.Console
             var website = client.GetWebsiteById(websiteId);
             if(website != null)
             {
-                System.Console.Write($"Are you sure you want to remove {website.Url} from the watch list? (y/n)");
-                var input = System.Console.ReadLine();
-                if(input == "y" || input == "Y")
+                var confirmRemove = Prompt.GetYesNo($"Are you sure you want to remove {website.Url} from the watch list?", defaultAnswer: false);
+                if (confirmRemove)
                 {
                     client.DeleteWebsite(website);
                 }
