@@ -14,6 +14,8 @@ namespace WebWatcher.Core.WebClient
             _httpClient = httpClientFactory.CreateClient();
         }
 
+        // TODO: return a processing result object with errors/warnings.
+        // Warn if xpath expression fails to match element.
         public async Task<string> GetContentAsync(Website website)
         {
             var response = await _httpClient.GetAsync(website.Url);
@@ -21,9 +23,14 @@ namespace WebWatcher.Core.WebClient
 
             var content = await response.Content.ReadAsStringAsync();
 
-            if(!string.IsNullOrEmpty(website.ElementSelector))
+            // filter by optional element selector xpath
+            if (!string.IsNullOrEmpty(website.ElementSelector))
             {
-                // TODO: filter by element selector
+                var filteredContent = HtmlParser.SelectNode(content, website.ElementSelector);
+                if (!string.IsNullOrEmpty(filteredContent))
+                {
+                    content = filteredContent;
+                }
             }
 
             return content;            
