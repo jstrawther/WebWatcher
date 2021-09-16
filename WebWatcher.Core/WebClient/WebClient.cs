@@ -18,6 +18,7 @@ namespace WebWatcher.Core.WebClient
         // Warn if xpath expression fails to match element.
         public async Task<string> GetContentAsync(Website website)
         {
+            _httpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36");
             var response = await _httpClient.GetAsync(website.Url);
             response.EnsureSuccessStatusCode();
 
