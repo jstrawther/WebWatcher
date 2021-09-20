@@ -12,7 +12,7 @@ namespace WebWatcher.Core.WebClient
 
             var selectedNode = htmlDoc.DocumentNode.SelectSingleNode(xpath);
 
-            return selectedNode.ToString();
+            return selectedNode.OuterHtml.ToString();
         }
     }
 }
