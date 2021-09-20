@@ -74,6 +74,9 @@ namespace WebWatcher.Console
         [Option("-rm|--remove-website", Description = "Remove a website. Prompts for the ID to remove.")]
         public bool RemoveWebsite { get; set; }
 
+        [Option("-q|--quiet", Description = "Do not send notifications.")]
+        public bool Quiet { get; set; }
+
         private async Task<int> OnExecuteAsync(CommandLineApplication app, CancellationToken cancellationToken = default)
         {
             if (ListWebsites)
@@ -110,7 +113,7 @@ namespace WebWatcher.Console
 
         private async Task<int> CheckAllWebsitesAsync()
         {
-            await _client.CheckAllWebsitesAsync();
+            await _client.CheckAllWebsitesAsync(!Quiet);
 
             return 0;
         }

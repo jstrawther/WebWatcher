@@ -23,7 +23,7 @@ namespace WebWatcher.Core
             _notifier = notifier;
         }
 
-        public async Task CheckAllWebsitesAsync()
+        public async Task CheckAllWebsitesAsync(bool sendNotifications)
         {
             // Get all websites 
             var websites = GetAllWebsites();
@@ -41,7 +41,11 @@ namespace WebWatcher.Core
                 {
                     var snapshot = new WebsiteSnapshot(website, currentContent);
                     _dataAccess.AddSnapshot(snapshot);
-                    await _notifier.NotifySubscribersAsync(website, snapshot);
+
+                    if(sendNotifications)
+                    {
+                        await _notifier.NotifySubscribersAsync(website, snapshot);
+                    }
                 }
             }
         }
