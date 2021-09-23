@@ -20,7 +20,7 @@ namespace WebWatcher.Core.Notifications
                 var from = "WebWatcher <no-reply@jstrawther.ddns.net>"; // todo: get this from a config file or something
                 var to = subscriber.EmailAddress;
                 var subject = $"WebWatcher Notification :: Website Updated ";
-                var body = $"The following website has been updated: {website.Url}";
+                var body = $"The following website has been updated: {website.DisplayUrl}";
                 await _emailClient.SendAsync(from, to, subject, body);
             }
         }

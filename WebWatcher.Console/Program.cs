@@ -62,8 +62,11 @@ namespace WebWatcher.Console
         [Option("-l|--list-websites", Description = "List all websites currently being watched")]
         public bool ListWebsites { get; set; }
 
-        [Option("-a|--add-website", Description = "Add a website to watch")]
-        public string WebsiteToAdd { get; }
+        [Option("-a|--add-website", Description = "Add a website to watch (a.k.a. the Display Url)")]
+        public string DisplayUrl { get; }
+
+        [Option("-c|--content-url", Description = "A separate URL to fetch content from. If not specified, defaults to the main Display Url.")]
+        public string ContentUrl { get; }
 
         [Option("-s|--selector", Description = "Element selector")]
         public string ElementSelector { get; }
@@ -91,14 +94,14 @@ namespace WebWatcher.Console
                 return 0;
             }
 
-            if (!string.IsNullOrEmpty(WebsiteToAdd))
+            if (!string.IsNullOrEmpty(DisplayUrl))
             {
                 if (string.IsNullOrEmpty(EmailToNotify))
                 {
                     System.Console.Error.WriteLine("Use -n|--notify-email to specify an email address to notify.");
                     return 1;
                 }                
-                return AddWebsiteToWatch(WebsiteToAdd, ElementSelector, EmailToNotify);
+                return AddWebsiteToWatch(DisplayUrl, ContentUrl, ElementSelector, EmailToNotify);
             }
 
             // If EmailToNotify is specified on its own, list registered websites and prompt user to select one.
@@ -150,7 +153,7 @@ namespace WebWatcher.Console
             {                
                 foreach(var website in websites)
                 {
-                    System.Console.WriteLine($"{website.Id}: {website.Url}");
+                    System.Console.WriteLine($"{website.Id}: {website.DisplayUrl}");
                 }
 
                 websiteId = Prompt.GetInt("Enter website Id: ");
@@ -158,9 +161,9 @@ namespace WebWatcher.Console
             return websiteId.Value;
         }
 
-        private int AddWebsiteToWatch(string websiteUrlToAdd, string elementSelector, string emailToNotify)
+        private int AddWebsiteToWatch(string websiteUrlToAdd, string contentUrl, string elementSelector, string emailToNotify)
         {
-            return _client.AddWebsiteToWatch(websiteUrlToAdd, elementSelector, emailToNotify);
+            return _client.AddWebsiteToWatch(websiteUrlToAdd, contentUrl, elementSelector, emailToNotify);
         }
 
         private int AddEmailToNotify(int websiteIdToAdd, string emailToNotify)
@@ -174,7 +177,7 @@ namespace WebWatcher.Console
             var website = _client.GetWebsiteById(websiteId);
             if(website != null)
             {
-                var confirmRemove = Prompt.GetYesNo($"Are you sure you want to remove {website.Url} from the watch list?", defaultAnswer: false);
+                var confirmRemove = Prompt.GetYesNo($"Are you sure you want to remove {website.DisplayUrl} from the watch list?", defaultAnswer: false);
                 if (confirmRemove)
                 {
                     _client.DeleteWebsite(website);

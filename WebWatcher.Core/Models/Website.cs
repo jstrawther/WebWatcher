@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace WebWatcher.Core.Models
 {
@@ -7,7 +6,9 @@ namespace WebWatcher.Core.Models
     {
         public int Id { get; set; }
 
-        public string Url { get; set; }
+        public string DisplayUrl { get; set; }
+
+        public string ContentUrl { get; set; }
 
         public string ElementSelector { get; set; }
 

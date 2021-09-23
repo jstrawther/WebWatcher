@@ -60,11 +60,12 @@ namespace WebWatcher.Core
             return _dataAccess.GetWebsiteById(id);
         }
 
-        public int AddWebsiteToWatch(string websiteUrlToAdd, string elementSelector, string emailToNotify)
+        public int AddWebsiteToWatch(string websiteUrlToAdd, string contentUrl, string elementSelector, string emailToNotify)
         {
             var website = new Website()
             {
-                Url = websiteUrlToAdd,
+                DisplayUrl = websiteUrlToAdd,
+                ContentUrl = contentUrl,
                 ElementSelector = elementSelector,
                 Subscribers = new List<WebsiteSubscriber>()
                 {
