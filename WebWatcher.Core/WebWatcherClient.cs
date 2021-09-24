@@ -31,8 +31,24 @@ namespace WebWatcher.Core
             // Process each website
             foreach(var website in websites)
             {
+                // determine url to check
+                var url = website.ContentUrl ?? website.DisplayUrl;
+
                 // Get the current content of the website.
-                var currentContent = await _webClient.GetContentAsync(website);
+                var currentContent = await _webClient.GetAsync(url);
+
+                // filter by optional element selector xpath
+                if (!string.IsNullOrEmpty(website.ElementSelector))
+                {
+                    var filteredContent = HtmlParser.SelectNode(currentContent, website.ElementSelector);
+
+                    // TODO: warn if HtmlParser fails to find content with ElementSelector
+
+                    if (!string.IsNullOrEmpty(filteredContent))
+                    {
+                        currentContent = filteredContent;
+                    }
+                }
 
                 // Get the latest snapshot and compare it to the current content.
                 // If they don't match, save a new snapshot and notify subscribers.

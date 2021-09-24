@@ -1,11 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using WebWatcher.Core.Models;
+﻿using System.Threading.Tasks;
 
 namespace WebWatcher.Core.WebClient
 {
     public interface IWebClient
     {
-        Task<string> GetContentAsync(Website website);
+        Task<string> GetAsync(string url);
     }
 }
