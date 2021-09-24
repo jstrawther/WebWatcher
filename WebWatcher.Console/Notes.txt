@@ -1,0 +1,21 @@
+﻿Need some automated tests to verify functionality.
+
+What do we want to verify?
+
+WebWatcherClient Unit Tests (stub the dependencies)
+* WebWatcherClient.CheckAllWebsitesAsync should call IDataAccess.GetAllWebsites
+* WebWatcherClient.CheckAllWebsitesAsync should call WebClient.GetAsync with ContentUrl if it is defined
+* WebWatcherClient.CheckAllWebsitesAsync should call WebClient.GetAsync with DisplayUrl if ContentUrl is not defined
+* WebWatcherClient.CheckAllWebsitesAsync should call IHtmlParser.SelectNode when ElementSelector is defined
+* WebWatcherClient.CheckAllWebsitesAsync should not call IHtmlParser.SelectNode when ElementSelector is not defined
+* WebWatcherClient.CheckAllWebsitesAsync should log a warning if IHtmlParser.SelectNode returns null
+* WebWatcherClient.CheckAllWebsitesAsync should call IDataAccess.GetLatestSnapshot
+* WebWatcherClient.CheckAllWebsitesAsync should call IDataAccess.AddSnapshot when GetLatestSnapshot returns null
+* WebWatcherClient.CheckAllWebsitesAsync should not call IDataAccess.AddSnapshot when GetLatestSnapshot returns the same value as WebClient.GetAsync and ElementSelector is null
+* WebWatcherClient.CheckAllWebsitesAsync should not call IDataAccess.AddSnapshot when GetLatestSnapshot returns the same value as IHtmlParser.SelectNode and ElementSelector is defined
+* WebWatcherClient.CheckAllWebsitesAsync should call IDataAccess.AddSnapshot when GetLatestSnapshot returns a different value than WebClient.GetAsync and ElementSelector is null
+* WebWatcherClient.CheckAllWebsitesAsync should call IDataAccess.AddSnapshot when GetLatestSnapshot returns a different value than IHtmlParser.SelectNode and ElementSelector is defined
+* WebWatcherClient.CheckAllWebsitesAsync should call INotifier.NotifySubscribersAsync when adding a snapshot and sendNotifications is true
+* WebWatcherClient.CheckAllWebsitesAsync should not call INotifier.NotifySubscribersAsync when adding a snapshot and sendNotifications is false
+
+WebWatcherClient Integration Tests (use real dependencies)
